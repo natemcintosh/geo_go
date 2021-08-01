@@ -176,6 +176,35 @@ func TestLineSegmentAngle(t *testing.T) {
 	}
 }
 
+func TestLineSegmentRotateAboutOrigin(t *testing.T) {
+	testCases := []struct {
+		desc  string
+		l     LineSegment
+		angle float64
+		out   LineSegment
+	}{
+		{
+			desc:  "x-axis line with no angle",
+			l:     LineSegment{Point{0, 0}, Point{1, 0}},
+			angle: 0,
+			out:   LineSegment{Point{0, 0}, Point{1, 0}},
+		},
+		{
+			desc:  "y-axis line with -90 deg angle",
+			l:     LineSegment{Point{0, 0}, Point{0, 1}},
+			angle: -math.Pi / 2,
+			out:   LineSegment{Point{0, 0}, Point{1, 0}},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.l.RotateAboutOrigin(tC.angle); !got.AlmostEquals(tC.out) {
+				t.Errorf("RotateAboutOrigin() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
 func TestOpenIntervalIsEmpty(t *testing.T) {
 	testCases := []struct {
 		desc string
@@ -324,6 +353,28 @@ func BenchmarkLineSegmentAngle(b *testing.B) {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				bm.in.Angle()
+			}
+
+		})
+	}
+}
+
+func BenchmarkLineSegmentRotateAboutOrigin(b *testing.B) {
+	benchmarks := []struct {
+		desc  string
+		l1    LineSegment
+		angle float64
+	}{
+		{"Rotate x-axis with no angle", LineSegment{Point{1, 0}, Point{2, 0}}, 0},
+		{"Rotate x-axis with 45 deg angle", LineSegment{Point{1, 0}, Point{2, 0}}, math.Pi / 4},
+		{"Rotate y-axis with no angle", LineSegment{Point{0, 1}, Point{0, 2}}, 0},
+		{"Rotate line at 45 deg angle by 90 deg", LineSegment{Point{0, 0}, Point{1, 1}}, math.Pi / 2},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.l1.RotateAboutOrigin(bm.angle)
 			}
 
 		})

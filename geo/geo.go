@@ -3,7 +3,10 @@
 // intersect.
 package gogeo
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 // Point is a point in 2D space. It can also be thought of as a vector from the origin
 // to the point.
@@ -66,6 +69,15 @@ type LineSegment struct {
 	P2 Point
 }
 
+// Equals tests if two LineSegments are equal.
+func (l LineSegment) Equals(m LineSegment) bool {
+	return (l.P1.X == m.P1.X) && (l.P1.Y == m.P1.Y) && (l.P2.X == m.P2.X) && (l.P2.Y == m.P2.Y)
+}
+
+func (l LineSegment) AlmostEquals(m LineSegment) bool {
+	return l.P1.AlmostEquals(m.P1) && l.P2.AlmostEquals(m.P2)
+}
+
 // Plus adds the x and y components of a Point to a LineSegment.
 func (l LineSegment) Plus(p Point) LineSegment {
 	return LineSegment{l.P1.Plus(p), l.P2.Plus(p)}
@@ -74,11 +86,6 @@ func (l LineSegment) Plus(p Point) LineSegment {
 // Minus subtracts the x and y components of a Point to a LineSegment.
 func (l LineSegment) Minus(p Point) LineSegment {
 	return LineSegment{l.P1.Minus(p), l.P2.Minus(p)}
-}
-
-// Equals tests if two LineSegments are equal.
-func (l LineSegment) Equals(m LineSegment) bool {
-	return (l.P1.X == m.P1.X) && (l.P1.Y == m.P1.Y) && (l.P2.X == m.P2.X) && (l.P2.Y == m.P2.Y)
 }
 
 // Angle calculates the angle of a LineSegment in radians from where it intersects the positive x-axis.
@@ -123,4 +130,35 @@ func (o OpenInterval) Intersection(p OpenInterval) OpenInterval {
 // bound is NaN.
 func (o OpenInterval) IsEmpty() bool {
 	return math.IsNaN(o.Lower) || math.IsNaN(o.Upper)
+}
+
+// Intersects will determine if two LineSegments intersect. They are said to intersect
+// if any point on the segments, including the endpoints intersects.
+func (l1 LineSegment) Intersects(l2 LineSegment) bool {
+	// Pick a point on segment 1 and make it the origin. Move other points relative to it.
+	l1_translated := l1.Minus(l1.P1)
+	l2_translated := l2.Minus(l1.P1)
+
+	// Rotate all points so that segment 1 is aligned with the x-axis.
+	angle_to_rotate_through := -l1_translated.Angle()
+	l1_rotated := l1_translated.RotateAboutOrigin(angle_to_rotate_through)
+	l2_rotated := l2_translated.RotateAboutOrigin(angle_to_rotate_through)
+	fmt.Println(l1_rotated)
+	fmt.Println(l2_rotated)
+	return true
+}
+
+func main() {
+	p1 := Point{0, 0}
+	p2 := Point{1, 1}
+	p3 := Point{1, 0}
+	p4 := Point{2, 1}
+	p5 := Point{0.5, 0}
+	p6 := Point{0.5, 1}
+	l1 := LineSegment{p1, p2}
+	l2 := LineSegment{p3, p4}
+	l3 := LineSegment{p5, p6}
+	fmt.Println(l1.Angle())
+	fmt.Println(l2.Angle())
+	fmt.Println(l3.Angle())
 }
