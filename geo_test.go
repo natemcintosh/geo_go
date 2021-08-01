@@ -176,6 +176,95 @@ func TestLineSegmentAngle(t *testing.T) {
 	}
 }
 
+func TestOpenIntervalIsEmpty(t *testing.T) {
+	testCases := []struct {
+		desc string
+		in   OpenInterval
+		out  bool
+	}{
+		{
+			desc: "both NaN",
+			in:   OpenInterval{math.NaN(), math.NaN()},
+			out:  true,
+		},
+		{
+			desc: "first NaN",
+			in:   OpenInterval{math.NaN(), 1},
+			out:  true,
+		},
+		{
+			desc: "second NaN",
+			in:   OpenInterval{1, math.NaN()},
+			out:  true,
+		},
+		{
+			desc: "both are regular numbers",
+			in:   OpenInterval{1, 2},
+			out:  false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.in.IsEmpty(); got != tC.out {
+				t.Errorf("IsEmpty() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
+func TestOpenIntervalIntersection(t *testing.T) {
+	testCases := []struct {
+		desc string
+		o1   OpenInterval
+		o2   OpenInterval
+		out  OpenInterval
+	}{
+		{
+			desc: "No overlap",
+			o1:   OpenInterval{1, 2},
+			o2:   OpenInterval{3, 4},
+			out:  OpenInterval{math.NaN(), math.NaN()},
+		},
+		{
+			desc: "Some overlap",
+			o1:   OpenInterval{1, 2},
+			o2:   OpenInterval{1.5, 2.5},
+			out:  OpenInterval{1.5, 2},
+		},
+		{
+			desc: "Complete overlap",
+			o1:   OpenInterval{1, 2},
+			o2:   OpenInterval{1, 2},
+			out:  OpenInterval{1, 2},
+		},
+		{
+			desc: "Single number overlap",
+			o1:   OpenInterval{1, 2},
+			o2:   OpenInterval{2, 3},
+			out:  OpenInterval{2, 2},
+		},
+		{
+			desc: "Some more overlap",
+			o1:   OpenInterval{-10, -5},
+			o2:   OpenInterval{-7.3, -2},
+			out:  OpenInterval{-7.3, -5},
+		},
+		{
+			desc: "Both NaN",
+			o1:   OpenInterval{math.NaN(), math.NaN()},
+			o2:   OpenInterval{math.NaN(), math.NaN()},
+			out:  OpenInterval{math.NaN(), math.NaN()},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.o1.Intersection(tC.o2); !got.Equals(tC.out) {
+				t.Errorf("Intersection() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
 func BenchmarkPointAngle(b *testing.B) {
 	benchmarks := []struct {
 		desc string
@@ -235,6 +324,51 @@ func BenchmarkLineSegmentAngle(b *testing.B) {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				bm.in.Angle()
+			}
+
+		})
+	}
+}
+
+func BenchmarkOpenIntervalIntersection(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		o1   OpenInterval
+		o2   OpenInterval
+	}{
+		{"No overlap", OpenInterval{1, 2}, OpenInterval{3, 4}},
+		{"Some overlap", OpenInterval{1, 2}, OpenInterval{1.5, 2.5}},
+		{"Complete overlap", OpenInterval{1, 2}, OpenInterval{1, 2}},
+		{"Single number overlap", OpenInterval{1, 2}, OpenInterval{2, 3}},
+		{"Some more overlap", OpenInterval{-10, -5}, OpenInterval{-7.3, -2}},
+		{"Both NaN", OpenInterval{math.NaN(), math.NaN()}, OpenInterval{math.NaN(), math.NaN()}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.o1.Intersection(bm.o2)
+			}
+
+		})
+	}
+}
+
+func BenchmarkOpenIntervalIsEmpty(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		in   OpenInterval
+	}{
+		{"empty", OpenInterval{math.NaN(), math.NaN()}},
+		{"first NaN", OpenInterval{math.NaN(), 1}},
+		{"second NaN", OpenInterval{1, math.NaN()}},
+		{"both are regular numbers", OpenInterval{1, 2}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.in.IsEmpty()
 			}
 
 		})
