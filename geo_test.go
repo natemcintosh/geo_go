@@ -219,7 +219,7 @@ func BenchmarkPointRotate(b *testing.B) {
 	}
 }
 
-func BenchmarkLineSegment(b *testing.B) {
+func BenchmarkLineSegmentAngle(b *testing.B) {
 	benchmarks := []struct {
 		desc string
 		in   LineSegment

@@ -51,9 +51,9 @@ func (p Point) Divide(f float64) Point {
 }
 
 // Rotate rotates a LineSegment by the given angle in radians.
-func (p Point) Rotate(theta float64) Point {
-	s := math.Sin(theta)
-	c := math.Cos(theta)
+func (p Point) Rotate(angle float64) Point {
+	s := math.Sin(angle)
+	c := math.Cos(angle)
 	return Point{
 		X: c*p.X - s*p.Y,
 		Y: s*p.X + c*p.Y,
@@ -86,7 +86,7 @@ func (l LineSegment) Angle() float64 {
 	return math.Atan2(l.P2.Y-l.P1.Y, l.P2.X-l.P1.X)
 }
 
-// Rotate will rotate a line segment by the given angle in radians about the origin.
-func (l LineSegment) Rotate(theta float64) LineSegment {
-	return LineSegment{l.P1.Rotate(theta), l.P2.Rotate(theta)}
+// RotateAboutOrigin rotates a LineSegment by the given angle in radians about the origin.
+func (l LineSegment) RotateAboutOrigin(angle float64) LineSegment {
+	return LineSegment{l.P1.Rotate(angle), l.P2.Rotate(angle)}
 }
