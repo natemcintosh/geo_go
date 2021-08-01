@@ -1,3 +1,3 @@
-module example.com/go_geo
+module example.com/gogeo
 
 go 1.16
