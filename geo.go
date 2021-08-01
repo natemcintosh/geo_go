@@ -90,3 +90,37 @@ func (l LineSegment) Angle() float64 {
 func (l LineSegment) RotateAboutOrigin(angle float64) LineSegment {
 	return LineSegment{l.P1.Rotate(angle), l.P2.Rotate(angle)}
 }
+
+// OpenInterval represents the open interval [a, b].
+type OpenInterval struct {
+	Lower float64
+	Upper float64
+}
+
+func (o OpenInterval) Equals(p OpenInterval) bool {
+	// Check if the lower bound is NaN on both, or are equal.
+	if (math.IsNaN(o.Lower) && math.IsNaN(p.Lower)) || (o.Lower == p.Lower) {
+		// Check if the upper bound is NaN on both, or are equal.
+		if (math.IsNaN(o.Upper) && math.IsNaN(p.Upper)) || (o.Upper == p.Upper) {
+			return true
+		}
+	}
+	return false
+}
+
+// Intersection calculates the overlap of two OpenIntervals. If there is no overlap, it
+// returns an OpenInterval with NaN values
+func (o OpenInterval) Intersection(p OpenInterval) OpenInterval {
+	if (o.Upper < p.Lower) || (p.Upper < o.Lower) {
+		return OpenInterval{math.NaN(), math.NaN()}
+	}
+	q_start := math.Max(o.Lower, p.Lower)
+	q_end := math.Min(o.Upper, p.Upper)
+	return OpenInterval{q_start, q_end}
+}
+
+// IsEmpty tests if an OpenInterval is empty. An OpenInterval is assumed empty if either
+// bound is NaN.
+func (o OpenInterval) IsEmpty() bool {
+	return math.IsNaN(o.Lower) || math.IsNaN(o.Upper)
+}
