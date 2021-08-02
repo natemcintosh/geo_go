@@ -575,6 +575,11 @@ func BenchmarkLineSegmentsIntersects(b *testing.B) {
 			LineSegment{Point{0, 0}, Point{0, 1}},
 			LineSegment{Point{1, 1}, Point{0, 1}},
 		},
+		{
+			"They overlap along a section",
+			LineSegment{Point{0, 0}, Point{1, 1}},
+			LineSegment{Point{0.9, 0.9}, Point{1.1, 1.1}},
+		},
 	}
 
 	for _, bm := range benchmarks {
