@@ -87,6 +87,65 @@ func TestPointRotate(t *testing.T) {
 	}
 }
 
+func TestPointsXIntercept(t *testing.T) {
+	testCases := []struct {
+		desc string
+		p    Point
+		q    Point
+		out  float64
+	}{
+		{
+			desc: "Two points on the y-axis",
+			p:    Point{0, -1},
+			q:    Point{0, 1},
+			out:  0,
+		},
+		{
+			desc: "Two points vertically stacked",
+			p:    Point{1, -1},
+			q:    Point{1, 1},
+			out:  1,
+		},
+		{
+			desc: "Two points forming a line passing through the origin",
+			p:    Point{1, 1},
+			q:    Point{-1, -1},
+			out:  0,
+		},
+		{
+			desc: "Two points forming a line passing through 1.0",
+			p:    Point{0, -1},
+			q:    Point{2, 1},
+			out:  1,
+		},
+		{
+			desc: "Two points forming a line passing through 11",
+			p:    Point{3, 4},
+			q:    Point{5, 3},
+			out:  11,
+		},
+		{
+			desc: "A horizontal line",
+			p:    Point{0, 1},
+			q:    Point{10, 1},
+			out:  math.Inf(1),
+		},
+		{
+			desc: "Another horizontal line",
+			p:    Point{0, 1},
+			q:    Point{-10, 1},
+			out:  math.Inf(1),
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.p.XIntercept(tC.q); got != tC.out {
+				t.Errorf("XIntercept() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
 func TestLineSegmentAdd(t *testing.T) {
 	testCases := []struct {
 		desc string
@@ -195,6 +254,18 @@ func TestLineSegmentRotateAboutOrigin(t *testing.T) {
 			angle: -math.Pi / 2,
 			out:   LineSegment{Point{0, 0}, Point{1, 0}},
 		},
+		{
+			desc:  "x-axis line by 90 deg",
+			l:     LineSegment{Point{1, 0}, Point{2, 0}},
+			angle: math.Pi / 2,
+			out:   LineSegment{Point{0, 1}, Point{0, 2}},
+		},
+		{
+			desc:  "line at 45 deg rotated by 180 deg",
+			l:     LineSegment{Point{1, 1}, Point{2, 2}},
+			angle: math.Pi,
+			out:   LineSegment{Point{-1, -1}, Point{-2, -2}},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
@@ -294,6 +365,85 @@ func TestOpenIntervalIntersection(t *testing.T) {
 	}
 }
 
+// We have a few failing tests here. Try printing out the inputs of all calls, and see
+// if you can figure out what's wrong.
+func TestLineSegmentIntersects(t *testing.T) {
+	testCases := []struct {
+		desc string
+		l1   LineSegment
+		l2   LineSegment
+		out  bool
+	}{
+		{
+			desc: "Two segments definitely cross",
+			l1:   LineSegment{Point{0, 0}, Point{1, 1}},
+			l2:   LineSegment{Point{1, 0}, Point{0, 1}},
+			out:  true,
+		},
+		{
+			desc: "Two segments definitely don't cross",
+			l1:   LineSegment{Point{0, 0}, Point{1, 1}},
+			l2:   LineSegment{Point{-10, -10}, Point{-20, -20}},
+			out:  false,
+		},
+		{
+			desc: "They meet at a one end",
+			l1:   LineSegment{Point{0, 0}, Point{0, 1}},
+			l2:   LineSegment{Point{1, 1}, Point{0, 1}},
+			out:  true,
+		},
+		{
+			desc: "They almost meet",
+			l1:   LineSegment{Point{0, 0}, Point{1, 1}},
+			l2:   LineSegment{Point{1.1, 1.1}, Point{1.2, 1.2}},
+			out:  false,
+		},
+		{
+			desc: "They overlap along the line y = x",
+			l1:   LineSegment{Point{0, 0}, Point{1, 1}},
+			l2:   LineSegment{Point{0.9, 0.9}, Point{1.1, 1.1}},
+			out:  true,
+		},
+		{
+			desc: "They overlap along the line y = 0",
+			l1:   LineSegment{Point{0, 0}, Point{1, 0}},
+			l2:   LineSegment{Point{0.9, 0}, Point{1.1, 0}},
+			out:  true,
+		},
+		{
+			desc: "They overlap along the line x = 0",
+			l1:   LineSegment{Point{0, 0}, Point{0, 1}},
+			l2:   LineSegment{Point{0, 0.9}, Point{0, 1.1}},
+			out:  true,
+		},
+		{
+			desc: "They cross at (0.5, 0)",
+			l1:   LineSegment{Point{0, 0}, Point{1, 0}},
+			l2:   LineSegment{Point{0.5, 1}, Point{0.5, -1}},
+			out:  true,
+		},
+		{
+			desc: "They cross at (1, 1)",
+			l1:   LineSegment{Point{0, 0}, Point{2, 2}},
+			l2:   LineSegment{Point{1, 0}, Point{0, 1}},
+			out:  true,
+		},
+		{
+			desc: "One crosses the end of the other",
+			l1:   LineSegment{Point{0, 0}, Point{1, 0}},
+			l2:   LineSegment{Point{1, 1}, Point{1, -1}},
+			out:  true,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.l1.Intersects(tC.l2); got != tC.out {
+				t.Errorf("Intersects() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
 func BenchmarkPointAngle(b *testing.B) {
 	benchmarks := []struct {
 		desc string
@@ -331,6 +481,29 @@ func BenchmarkPointRotate(b *testing.B) {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				bm.in.Rotate(bm.angle)
+			}
+
+		})
+	}
+}
+
+func BenchmarkPointXIntercept(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		p    Point
+		q    Point
+	}{
+		{"Intercept of two vertical lines", Point{1, 0}, Point{1, 1}},
+		{"Intercept of two horizontal lines", Point{0, 1}, Point{1, 1}},
+		{"Intercept of two diagonal lines", Point{1, 1}, Point{3, 3}},
+		{"Intercept of two lines with same slope", Point{1, 1}, Point{2, 2}},
+		{"Intercept of two lines with different slope", Point{1, 1}, Point{2, 3}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.p.XIntercept(bm.q)
 			}
 
 		})
@@ -375,6 +548,39 @@ func BenchmarkLineSegmentRotateAboutOrigin(b *testing.B) {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				bm.l1.RotateAboutOrigin(bm.angle)
+			}
+
+		})
+	}
+}
+
+func BenchmarkLineSegmentsIntersects(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		l1   LineSegment
+		l2   LineSegment
+	}{
+		{
+			"Two that definitely overlap",
+			LineSegment{Point{0, 0}, Point{1, 1}},
+			LineSegment{Point{1, 0}, Point{0, 1}},
+		},
+		{
+			"Two that definitely don't overlap",
+			LineSegment{Point{0, 0}, Point{1, 1}},
+			LineSegment{Point{2, 0}, Point{3, 1}},
+		},
+		{
+			"Two that overlap on one point",
+			LineSegment{Point{0, 0}, Point{0, 1}},
+			LineSegment{Point{1, 1}, Point{0, 1}},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.l1.Intersects(bm.l2)
 			}
 
 		})

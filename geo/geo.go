@@ -4,7 +4,6 @@
 package gogeo
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -63,6 +62,17 @@ func (p Point) Rotate(angle float64) Point {
 	}
 }
 
+// XIntercept will calculate the x-intercept of an infinite line, as defined by the two
+// points `p` and `q`. If the line is horizontal, returns +Inf.
+func (p Point) XIntercept(q Point) float64 {
+	i := p.X - (p.Y * (q.X - p.X) / (q.Y - p.Y))
+	if math.IsInf(i, 0) {
+		return math.Inf(1)
+	} else {
+		return i
+	}
+}
+
 // LineSegment is a line segment in 2D space. It is defined by two Points.
 type LineSegment struct {
 	P1 Point
@@ -96,6 +106,70 @@ func (l LineSegment) Angle() float64 {
 // RotateAboutOrigin rotates a LineSegment by the given angle in radians about the origin.
 func (l LineSegment) RotateAboutOrigin(angle float64) LineSegment {
 	return LineSegment{l.P1.Rotate(angle), l.P2.Rotate(angle)}
+}
+
+// sign returns +1 for positive, 0 for 0.0, and -1 for negative
+func sign(x float64) int {
+	if x > 0 {
+		return 1
+	} else if x < 0 {
+		return -1
+	} else {
+		return 0
+	}
+}
+
+// XIntercept will return the x-coordinate of the intersection of a LineSegment.
+// Looking at the signs of the y-values of the vertices, there are the following cases:
+// 1. both zero -> OpenInterval between x vertices
+// 2. both negative -> OpenInterval of NaN -> NaN. I.e. nothing will match
+// 3. both positive -> OpenInterval of NaN -> NaN. I.e. nothing will match
+// 4. one zero, one negative -> OpenInterval of the one vertex on the x-axis
+// 5. one zero, one positive -> OpenInterval of the one vertex on the x-axis
+// 6. one negative, one positive -> OpenInterval of the intersection
+func (l LineSegment) XIntercept() OpenInterval {
+	// First make sure neither point is NaN. If so, return an empty OpenInterval.
+	if math.IsNaN(l.P1.X) || math.IsNaN(l.P2.X) {
+		return OpenInterval{math.NaN(), math.NaN()}
+	}
+
+	// Get the sign of the y points of the line
+	sign_y1 := sign(l.P1.Y)
+	sign_y2 := sign(l.P2.Y)
+	sum_of_signs := float64(sign_y1 + sign_y2)
+
+	if (sign_y1 == 0) && (sign_y2 == 0) {
+		// 1) both zero -> OpenInterval between x vertices
+		return OpenInterval{l.P1.X, l.P2.X}
+	} else if math.Abs(sum_of_signs) == 2 {
+		// 2 & 3) both points are above or below the x-axis, no intersection
+		return OpenInterval{math.NaN(), math.NaN()}
+	} else if sum_of_signs == -1 {
+		// 4) one zero, one negative -> OpenInterval of the one vertex on the x-axis
+		if sign_y1 < 0 { // p1 is below x-axis, p2 is on the x-axis
+			return OpenInterval{l.P2.X, l.P2.X}
+		} else { // p2 is below x-axis, p1 is on the x-axis
+			return OpenInterval{l.P1.X, l.P1.X}
+		}
+	} else if sum_of_signs == 1 {
+		// 5) one zero, one positive -> OpenInterval of the one vertex on the x-axis
+		if sign_y2 > 0 { // p2 is above x-axis, p1 is on the x-axis
+			return OpenInterval{l.P1.X, l.P1.X}
+		} else { // p1 is above x-axis, p2 is on the x-axis
+			return OpenInterval{l.P2.X, l.P2.X}
+		}
+	} else {
+		// 6) one negative, one positive -> OpenInterval of the intersection
+		// Get the x-intercept of the line
+		x_intercept := l.P1.XIntercept(l.P2)
+		if math.IsInf(x_intercept, 0) { // the line is horizontal
+			// Make the OpenInterval with NaNs
+			return OpenInterval{math.NaN(), math.NaN()}
+		} else {
+			return OpenInterval{x_intercept, x_intercept}
+		}
+
+	}
 }
 
 // OpenInterval represents the open interval [a, b].
@@ -143,22 +217,15 @@ func (l1 LineSegment) Intersects(l2 LineSegment) bool {
 	angle_to_rotate_through := -l1_translated.Angle()
 	l1_rotated := l1_translated.RotateAboutOrigin(angle_to_rotate_through)
 	l2_rotated := l2_translated.RotateAboutOrigin(angle_to_rotate_through)
-	fmt.Println(l1_rotated)
-	fmt.Println(l2_rotated)
-	return true
-}
 
-func main() {
-	p1 := Point{0, 0}
-	p2 := Point{1, 1}
-	p3 := Point{1, 0}
-	p4 := Point{2, 1}
-	p5 := Point{0.5, 0}
-	p6 := Point{0.5, 1}
-	l1 := LineSegment{p1, p2}
-	l2 := LineSegment{p3, p4}
-	l3 := LineSegment{p5, p6}
-	fmt.Println(l1.Angle())
-	fmt.Println(l2.Angle())
-	fmt.Println(l3.Angle())
+	// Find the x-intercept of segment 2
+	// BUG: In cases where the lines overlap, the second segment is often off of the x-axis
+	// by some super small floating point number. Therefore l2_rotated.XIntercept() returns
+	// an empty OpenInterval.
+	l2_x_intercept := l2_rotated.XIntercept()
+
+	// Is it between the two points on segment 1?
+	l1_x_intercept := OpenInterval{l1_rotated.P1.X, l1_rotated.P2.X}
+
+	return !l1_x_intercept.Intersection(l2_x_intercept).IsEmpty()
 }
