@@ -119,6 +119,29 @@ func sign(x float64) int {
 	}
 }
 
+// almost_zero will check if a number is almost equal to 0
+func almost_zero(x float64) bool {
+	if math.Abs(x) < float64EqualityThreshold {
+		return true
+	} else {
+		return false
+	}
+}
+
+// sign_close_to_zero is very similar to `sign()`, but will check if `x` is almost equal
+// to zero.
+func sign_close_to_zero(x float64) int {
+	if almost_zero(x) {
+		return 0
+	} else if x > 0 {
+		return 1
+	} else if x < 0 {
+		return -1
+	} else {
+		return 0
+	}
+}
+
 // XIntercept will return the x-coordinate of the intersection of a LineSegment.
 // Looking at the signs of the y-values of the vertices, there are the following cases:
 // 1. both zero -> OpenInterval between x vertices
@@ -134,8 +157,8 @@ func (l LineSegment) XIntercept() OpenInterval {
 	}
 
 	// Get the sign of the y points of the line
-	sign_y1 := sign(l.P1.Y)
-	sign_y2 := sign(l.P2.Y)
+	sign_y1 := sign_close_to_zero(l.P1.Y)
+	sign_y2 := sign_close_to_zero(l.P2.Y)
 	sum_of_signs := float64(sign_y1 + sign_y2)
 
 	if (sign_y1 == 0) && (sign_y2 == 0) {
