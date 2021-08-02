@@ -434,6 +434,12 @@ func TestLineSegmentIntersects(t *testing.T) {
 			l2:   LineSegment{Point{1, 1}, Point{1, -1}},
 			out:  true,
 		},
+		{
+			desc: "The two segments don't cross",
+			l1:   LineSegment{Point{100, 100}, Point{200, 200}},
+			l2:   LineSegment{Point{-100, -100}, Point{-200, -200}},
+			out:  false,
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
