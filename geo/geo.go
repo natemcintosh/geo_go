@@ -142,7 +142,8 @@ func sign_close_to_zero(x float64) int {
 	}
 }
 
-// XIntercept will return the x-coordinate of the intersection of a LineSegment.
+// XIntercept will return the x-coordinate of the intersection of a LineSegment with the
+// x-axis.
 // Looking at the signs of the y-values of the vertices, there are the following cases:
 // 1. both zero -> OpenInterval between x vertices
 // 2. both negative -> OpenInterval of NaN -> NaN. I.e. nothing will match
@@ -208,9 +209,6 @@ func (l1 LineSegment) Intersects(l2 LineSegment) bool {
 	l2_rotated := l2_translated.RotateAboutOrigin(angle_to_rotate_through)
 
 	// Find the x-intercept of segment 2
-	// BUG: In cases where the lines overlap, the second segment is often off of the x-axis
-	// by some super small floating point number. Therefore l2_rotated.XIntercept() returns
-	// an empty OpenInterval.
 	l2_x_intercept := l2_rotated.XIntercept()
 
 	// Is it between the two points on segment 1?
