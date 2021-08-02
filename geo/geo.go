@@ -195,6 +195,30 @@ func (l LineSegment) XIntercept() OpenInterval {
 	}
 }
 
+// Intersects will determine if two LineSegments intersect. They are said to intersect
+// if any point on the segments, including the endpoints intersects.
+func (l1 LineSegment) Intersects(l2 LineSegment) bool {
+	// Pick a point on segment 1 and make it the origin. Move other points relative to it.
+	l1_translated := l1.Minus(l1.P1)
+	l2_translated := l2.Minus(l1.P1)
+
+	// Rotate all points so that segment 1 is aligned with the x-axis.
+	angle_to_rotate_through := -l1_translated.Angle()
+	l1_rotated := l1_translated.RotateAboutOrigin(angle_to_rotate_through)
+	l2_rotated := l2_translated.RotateAboutOrigin(angle_to_rotate_through)
+
+	// Find the x-intercept of segment 2
+	// BUG: In cases where the lines overlap, the second segment is often off of the x-axis
+	// by some super small floating point number. Therefore l2_rotated.XIntercept() returns
+	// an empty OpenInterval.
+	l2_x_intercept := l2_rotated.XIntercept()
+
+	// Is it between the two points on segment 1?
+	l1_x_intercept := OpenInterval{l1_rotated.P1.X, l1_rotated.P2.X}
+
+	return !l1_x_intercept.Intersection(l2_x_intercept).IsEmpty()
+}
+
 // OpenInterval represents the open interval [a, b].
 type OpenInterval struct {
 	Lower float64
@@ -227,28 +251,4 @@ func (o OpenInterval) Intersection(p OpenInterval) OpenInterval {
 // bound is NaN.
 func (o OpenInterval) IsEmpty() bool {
 	return math.IsNaN(o.Lower) || math.IsNaN(o.Upper)
-}
-
-// Intersects will determine if two LineSegments intersect. They are said to intersect
-// if any point on the segments, including the endpoints intersects.
-func (l1 LineSegment) Intersects(l2 LineSegment) bool {
-	// Pick a point on segment 1 and make it the origin. Move other points relative to it.
-	l1_translated := l1.Minus(l1.P1)
-	l2_translated := l2.Minus(l1.P1)
-
-	// Rotate all points so that segment 1 is aligned with the x-axis.
-	angle_to_rotate_through := -l1_translated.Angle()
-	l1_rotated := l1_translated.RotateAboutOrigin(angle_to_rotate_through)
-	l2_rotated := l2_translated.RotateAboutOrigin(angle_to_rotate_through)
-
-	// Find the x-intercept of segment 2
-	// BUG: In cases where the lines overlap, the second segment is often off of the x-axis
-	// by some super small floating point number. Therefore l2_rotated.XIntercept() returns
-	// an empty OpenInterval.
-	l2_x_intercept := l2_rotated.XIntercept()
-
-	// Is it between the two points on segment 1?
-	l1_x_intercept := OpenInterval{l1_rotated.P1.X, l1_rotated.P2.X}
-
-	return !l1_x_intercept.Intersection(l2_x_intercept).IsEmpty()
 }
