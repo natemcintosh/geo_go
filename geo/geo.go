@@ -52,7 +52,7 @@ func (p Point) Divide(f float64) Point {
 	return Point{p.X / f, p.Y / f}
 }
 
-// Rotate rotates a LineSegment by the given angle in radians.
+// Rotate rotates a Point by the given angle in radians.
 func (p Point) Rotate(angle float64) Point {
 	s := math.Sin(angle)
 	c := math.Cos(angle)
