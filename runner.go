@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	gogeo "example.com/gogeo/geo"
+	gogeo "github.com/natemcintosh/gogeo/geo"
 )
 
 func main() {
