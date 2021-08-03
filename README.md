@@ -1,4 +1,4 @@
-# geo_go
+# gogeo
 Learning Go(lang) and testing out Github copilot
 
 This repository is about learning the Go language and its tooling (e.g. testing, benchmarking, building). 
