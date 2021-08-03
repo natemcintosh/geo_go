@@ -146,6 +146,112 @@ func TestPointsXIntercept(t *testing.T) {
 	}
 }
 
+func TestPointMagnitude(t *testing.T) {
+	testCases := []struct {
+		desc string
+		in   Point
+		out  float64
+	}{
+		{
+			desc: "Should have magnitude of 1",
+			in:   Point{1, 0},
+			out:  1,
+		},
+		{
+			desc: "Should have magnitude of 2",
+			in:   Point{2, 0},
+			out:  2,
+		},
+		{
+			desc: "Should have magnitude of sqrt(2)",
+			in:   Point{1, 1},
+			out:  math.Sqrt(2),
+		},
+		{
+			desc: "Should have magnitude of sqrt(8)",
+			in:   Point{2, 2},
+			out:  math.Sqrt(8),
+		},
+		{
+			desc: "A 3-4-5 triangle",
+			in:   Point{3, 4},
+			out:  5,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.in.Magnitude(); got != tC.out {
+				t.Errorf("Magnitude() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
+func TestPointNormalize(t *testing.T) {
+	testCases := []struct {
+		desc string
+		in   Point
+		out  Point
+	}{
+		{
+			desc: "No change because already magnitude 1 along x-axis",
+			in:   Point{1, 0},
+			out:  Point{1, 0},
+		},
+		{
+			desc: "No change because already magnitude 1 along y-axis",
+			in:   Point{0, 1},
+			out:  Point{0, 1},
+		},
+		{
+			desc: "Should be Point with values of sqrt(2)/2",
+			in:   Point{1, 1},
+			out:  Point{math.Sqrt(2) / 2, math.Sqrt(2) / 2},
+		},
+		{
+			desc: "A more complicated example",
+			in:   Point{4, 5},
+			out:  Point{4 / 6.4031242374328485, 5 / 6.4031242374328485},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.in.Normalize(); !got.AlmostEquals(tC.out) {
+				t.Errorf("Normalize() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
+func TestPointDotProduct(t *testing.T) {
+	testCases := []struct {
+		desc string
+		p1   Point
+		p2   Point
+		out  float64
+	}{
+		{
+			desc: "perpendicular vectors have dot product of 0",
+			p1:   Point{1, 0},
+			p2:   Point{0, 1},
+			out:  0,
+		},
+		{
+			desc: "identical vectors have dot product of the same magnitude",
+			p1:   Point{1, 0},
+			p2:   Point{1, 0},
+			out:  1,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.p1.DotProduct(tC.p2); got != tC.out {
+				t.Errorf("DotProduct() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
 func TestLineSegmentAdd(t *testing.T) {
 	testCases := []struct {
 		desc string
@@ -365,8 +471,6 @@ func TestOpenIntervalIntersection(t *testing.T) {
 	}
 }
 
-// We have a few failing tests here. Try printing out the inputs of all calls, and see
-// if you can figure out what's wrong.
 func TestLineSegmentIntersects(t *testing.T) {
 	testCases := []struct {
 		desc string
@@ -510,6 +614,69 @@ func BenchmarkPointXIntercept(b *testing.B) {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				bm.p.XIntercept(bm.q)
+			}
+
+		})
+	}
+}
+
+func BenchmarkPointMagnitude(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		p    Point
+	}{
+		{"Point with magnitude 1", Point{1, 0}},
+		{"Point with magnitude 2", Point{2, 0}},
+		{"Point with magnitude sqrt(2)", Point{1, 1}},
+		{"Point with magnitude 5", Point{3, 4}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.p.Magnitude()
+			}
+
+		})
+	}
+}
+
+func BenchmarkPointNormalize(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		p    Point
+	}{
+		{"Point with magnitude 1", Point{1, 0}},
+		{"Point with magnitude 2", Point{2, 0}},
+		{"Point with magnitude sqrt(2)", Point{1, 1}},
+		{"Point with magnitude 5", Point{3, 4}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.p.Normalize()
+			}
+
+		})
+	}
+}
+
+func BenchmarkPointDotProduct(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		p    Point
+		q    Point
+	}{
+		{"Point with magnitude 1", Point{1, 0}, Point{1, 0}},
+		{"Point with magnitude 2", Point{2, 0}, Point{2, 0}},
+		{"Two Points with random numbers", Point{3.4, -2.3}, Point{100.2, 7.6}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.p.Magnitude()
 			}
 
 		})

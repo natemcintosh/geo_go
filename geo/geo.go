@@ -73,6 +73,21 @@ func (p Point) XIntercept(q Point) float64 {
 	}
 }
 
+// Magnitude returns the 2-norm of a Point, interpreting the Point as a vector.
+func (p Point) Magnitude() float64 {
+	return math.Sqrt(p.X*p.X + p.Y*p.Y)
+}
+
+// Normalize will normalize a Point to unit magnitude.
+func (p Point) Normalize() Point {
+	return p.Divide(p.Magnitude())
+}
+
+// DotProduct is the dot product of two Points, intepreted as vectors.
+func (p Point) DotProduct(q Point) float64 {
+	return p.X*q.X + p.Y*q.Y
+}
+
 // LineSegment is a line segment in 2D space. It is defined by two Points.
 type LineSegment struct {
 	P1 Point
