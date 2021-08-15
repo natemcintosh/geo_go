@@ -963,3 +963,71 @@ func BenchmarkTriangleArea(b *testing.B) {
 		})
 	}
 }
+
+func TestTriangleIntersects(t *testing.T) {
+	testCases := []struct {
+		desc string
+		t1   Triangle
+		t2   Triangle
+		out  bool
+	}{
+		{
+			desc: "They share a line",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 0}, Point{-1, 0}, Point{0, 1}},
+			out:  true,
+		},
+		{
+			desc: "They intersect at several points",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0.5, 2}, Point{0.5, -2}, Point{4, 0.5}},
+			out:  true,
+		},
+		{
+			desc: "They don't intersect",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{2, 0}, Point{2, 1}, Point{3, 0}},
+			out:  false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.t1.Intersects(tC.t2); got != tC.out {
+				t.Errorf("Intersects() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
+func BenchmarkTriangleIntersects(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		t1   Triangle
+		t2   Triangle
+	}{
+		{
+			desc: "They share a line",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 0}, Point{-1, 0}, Point{0, 1}},
+		},
+		{
+			desc: "They intersect at several points",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0.5, 2}, Point{0.5, -2}, Point{4, 0.5}},
+		},
+		{
+			desc: "They don't intersect",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{2, 0}, Point{2, 1}, Point{3, 0}},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.t1.Intersects(bm.t2)
+			}
+
+		})
+	}
+}

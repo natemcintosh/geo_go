@@ -269,8 +269,8 @@ type Triangle struct {
 	P3 Point
 }
 
-// Equals compares all three Points of a Triangle. The points do not necessarily
-// need to be in the same order. I.e. they can be in any permutation of the three
+// Equals compares all three Points of a Triangle. The points do not necessarily need to
+// be in the same order. I.e. they can be in any permutation of the three
 func (t Triangle) Equals(u Triangle) bool {
 	return (t.P1.Equals(u.P1) && t.P2.Equals(u.P2) && t.P3.Equals(u.P3)) ||
 		(t.P1.Equals(u.P1) && t.P2.Equals(u.P3) && t.P3.Equals(u.P2)) ||
@@ -287,4 +287,25 @@ func (t Triangle) Area() float64 {
 		t.P1.X*(t.P2.Y-t.P3.Y)+
 			t.P2.X*(t.P3.Y-t.P1.Y)+
 			t.P3.X*(t.P1.Y-t.P2.Y))
+}
+
+// Intersects will determine if two Triangles intersect. They are said to intersect
+// if any point on the triangles, including the vertices, intersects. This is done by
+// creating LineSegments between all vertices and checking if any intersect between the
+// two triangles.
+func (t Triangle) Intersects(u Triangle) bool {
+	// Create a LineSegment between each Point in t
+	t1 := LineSegment{t.P1, t.P2}
+	t2 := LineSegment{t.P2, t.P3}
+	t3 := LineSegment{t.P3, t.P1}
+
+	// Create a LineSegment between each Point in u
+	u1 := LineSegment{u.P1, u.P2}
+	u2 := LineSegment{u.P2, u.P3}
+	u3 := LineSegment{u.P3, u.P1}
+
+	// Check if any of the LineSegments intersect
+	return t1.Intersects(u1) || t1.Intersects(u2) || t1.Intersects(u3) ||
+		t2.Intersects(u1) || t2.Intersects(u2) || t2.Intersects(u3) ||
+		t3.Intersects(u1) || t3.Intersects(u2) || t3.Intersects(u3)
 }
