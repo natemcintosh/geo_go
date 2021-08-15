@@ -772,37 +772,6 @@ func TestLineSegmentIntersects(t *testing.T) {
 	}
 }
 
-func TestTriangleEquals(t *testing.T) {
-	testCases := []struct {
-		desc string
-		t1   Triangle
-		t2   Triangle
-	}{
-		{
-			desc: "Two equal triangles",
-			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
-			t2:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
-		},
-		{
-			desc: "They are the same but one is rotated",
-			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
-			t2:   Triangle{Point{0, 1}, Point{0, 0}, Point{1, 0}},
-		},
-		{
-			desc: "They are the same but one is rotated further",
-			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
-			t2:   Triangle{Point{1, 0}, Point{0, 1}, Point{0, 0}},
-		},
-	}
-	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			if got := tC.t1.Equals(tC.t2); !got {
-				t.Errorf("Equals() = %v, want %v", got, true)
-			}
-		})
-	}
-}
-
 func BenchmarkLineSegmentsIntersects(b *testing.B) {
 	benchmarks := []struct {
 		desc string
@@ -835,6 +804,91 @@ func BenchmarkLineSegmentsIntersects(b *testing.B) {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				bm.l1.Intersects(bm.l2)
+			}
+
+		})
+	}
+}
+
+func TestTriangleEquals(t *testing.T) {
+	testCases := []struct {
+		desc string
+		t1   Triangle
+		t2   Triangle
+		out  bool
+	}{
+		{
+			desc: "Two equal triangles",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			out:  true,
+		},
+		{
+			desc: "They are the same but one is rotated",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 1}, Point{0, 0}, Point{1, 0}},
+			out:  true,
+		},
+		{
+			desc: "They are the same but one is rotated further",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{1, 0}, Point{0, 1}, Point{0, 0}},
+			out:  true,
+		},
+		{
+			desc: "They are not the same",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 1}, Point{5, 3}, Point{1, 0}},
+			out:  false,
+		},
+		{
+			desc: "They are almost the same",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0.00001, 0.00001}, Point{1, 0}, Point{0, 1}},
+			out:  false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.t1.Equals(tC.t2); got != tC.out {
+				t.Errorf("Equals() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
+func BenchmarkTriangleEquals(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		t1   Triangle
+		t2   Triangle
+	}{
+		{
+			desc: "Two equal triangles",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+		},
+		{
+			desc: "They are the same but one is rotated",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 1}, Point{0, 0}, Point{1, 0}},
+		},
+		{
+			desc: "They are the same but one is rotated further",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{1, 0}, Point{0, 1}, Point{0, 0}},
+		},
+		{
+			desc: "The are equal, but on the final permutation",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 1}, Point{1, 0}, Point{0, 0}},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.t1.Equals(bm.t2)
 			}
 
 		})
