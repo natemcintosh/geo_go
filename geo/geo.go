@@ -136,11 +136,7 @@ func sign(x float64) int {
 
 // almost_zero will check if a number is almost equal to 0
 func almost_zero(x float64) bool {
-	if math.Abs(x) < float64EqualityThreshold {
-		return true
-	} else {
-		return false
-	}
+	return math.Abs(x) < float64EqualityThreshold
 }
 
 // sign_close_to_zero is very similar to `sign()`, but will check if `x` is almost equal
@@ -264,4 +260,23 @@ func (o OpenInterval) Intersection(p OpenInterval) OpenInterval {
 // bound is NaN.
 func (o OpenInterval) IsEmpty() bool {
 	return math.IsNaN(o.Lower) || math.IsNaN(o.Upper)
+}
+
+// Triangle is made up of three Points.
+type Triangle struct {
+	P1 Point
+	P2 Point
+	P3 Point
+}
+
+// Equals compares all three Points of a Triangle. The points do not necessarily
+// need to be in the same order. I.e. they can be in any permutation of the three
+func (t Triangle) Equals(u Triangle) bool {
+	return (t.P1.Equals(u.P1) && t.P2.Equals(u.P2) && t.P3.Equals(u.P3)) ||
+		(t.P1.Equals(u.P1) && t.P2.Equals(u.P3) && t.P3.Equals(u.P2)) ||
+		(t.P1.Equals(u.P2) && t.P2.Equals(u.P1) && t.P3.Equals(u.P3)) ||
+		(t.P1.Equals(u.P2) && t.P2.Equals(u.P3) && t.P3.Equals(u.P1)) ||
+		(t.P1.Equals(u.P3) && t.P2.Equals(u.P1) && t.P3.Equals(u.P2)) ||
+		(t.P1.Equals(u.P3) && t.P2.Equals(u.P2) && t.P3.Equals(u.P1))
+
 }
