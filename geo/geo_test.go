@@ -894,3 +894,72 @@ func BenchmarkTriangleEquals(b *testing.B) {
 		})
 	}
 }
+
+func TestTriangleArea(t *testing.T) {
+	testCases := []struct {
+		desc string
+		t    Triangle
+		out  float64
+	}{
+		{
+			desc: "Should have area of 2",
+			t:    Triangle{Point{0, 0}, Point{2, 0}, Point{2, 2}},
+			out:  2,
+		},
+		{
+			desc: "Should have area of 0",
+			t:    Triangle{Point{0, 0}, Point{0, 0}, Point{0, 0}},
+			out:  0,
+		},
+		{
+			desc: "Should have area of 6",
+			t:    Triangle{Point{0, 0}, Point{3, 0}, Point{3, 4}},
+			out:  6,
+		},
+		{
+			desc: "Should have area of 4.5",
+			t:    Triangle{Point{0, 0}, Point{3, 0}, Point{3, 3}},
+			out:  4.5,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.t.Area(); got != tC.out {
+				t.Errorf("Area() = %v, want %v", got, tC.out)
+			}
+		})
+	}
+}
+
+func BenchmarkTriangleArea(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		t1   Triangle
+	}{
+		{
+			desc: "Should have area of 2",
+			t1:   Triangle{Point{0, 0}, Point{2, 0}, Point{2, 2}},
+		},
+		{
+			desc: "Should have area of 0",
+			t1:   Triangle{Point{0, 0}, Point{0, 0}, Point{0, 0}},
+		},
+		{
+			desc: "Should have area of 6",
+			t1:   Triangle{Point{0, 0}, Point{3, 0}, Point{3, 4}},
+		},
+		{
+			desc: "Should have area of 4.5",
+			t1:   Triangle{Point{0, 0}, Point{3, 0}, Point{3, 3}},
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.t1.Area()
+			}
+
+		})
+	}
+}

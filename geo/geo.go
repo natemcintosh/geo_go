@@ -280,3 +280,11 @@ func (t Triangle) Equals(u Triangle) bool {
 		(t.P1.Equals(u.P3) && t.P2.Equals(u.P2) && t.P3.Equals(u.P1))
 
 }
+
+// Area is the area of a Triangle.
+func (t Triangle) Area() float64 {
+	return 0.5 * math.Abs(
+		t.P1.X*(t.P2.Y-t.P3.Y)+
+			t.P2.X*(t.P3.Y-t.P1.Y)+
+			t.P3.X*(t.P1.Y-t.P2.Y))
+}
