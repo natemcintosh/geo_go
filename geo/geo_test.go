@@ -46,6 +46,28 @@ func TestPointAngle(t *testing.T) {
 	}
 }
 
+func BenchmarkPointAngle(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		in   Point
+	}{
+		{"positive x-axis", Point{1, 0}},
+		{"positive y-axis", Point{0, 1}},
+		{"negative y-axis", Point{-1, 0}},
+		{"random point 1", Point{3.4, -2.3}},
+		{"random point 2", Point{100.2, 7.6}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.in.Angle()
+			}
+
+		})
+	}
+}
+
 func TestPointRotate(t *testing.T) {
 	testCases := []struct {
 		desc  string
@@ -83,6 +105,27 @@ func TestPointRotate(t *testing.T) {
 			if got := tC.in.Rotate(tC.angle); !got.AlmostEquals(tC.out) {
 				t.Errorf("Rotate() = %v, want %v", got, tC.out)
 			}
+		})
+	}
+}
+
+func BenchmarkPointRotate(b *testing.B) {
+	benchmarks := []struct {
+		desc  string
+		in    Point
+		angle float64
+	}{
+		{"Rotate x-axis with no angle", Point{1, 0}, 0},
+		{"Rotate x-axis with 45 deg angle", Point{1, 0}, math.Pi / 4},
+		{"Rotate random point by 90 deg angle", Point{3.4, -2.3}, math.Pi / 2},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.in.Rotate(bm.angle)
+			}
+
 		})
 	}
 }
@@ -146,6 +189,29 @@ func TestPointsXIntercept(t *testing.T) {
 	}
 }
 
+func BenchmarkPointXIntercept(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		p    Point
+		q    Point
+	}{
+		{"Intercept of two vertical lines", Point{1, 0}, Point{1, 1}},
+		{"Intercept of two horizontal lines", Point{0, 1}, Point{1, 1}},
+		{"Intercept of two diagonal lines", Point{1, 1}, Point{3, 3}},
+		{"Intercept of two lines with same slope", Point{1, 1}, Point{2, 2}},
+		{"Intercept of two lines with different slope", Point{1, 1}, Point{2, 3}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.p.XIntercept(bm.q)
+			}
+
+		})
+	}
+}
+
 func TestPointMagnitude(t *testing.T) {
 	testCases := []struct {
 		desc string
@@ -187,6 +253,27 @@ func TestPointMagnitude(t *testing.T) {
 	}
 }
 
+func BenchmarkPointMagnitude(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		p    Point
+	}{
+		{"Point with magnitude 1", Point{1, 0}},
+		{"Point with magnitude 2", Point{2, 0}},
+		{"Point with magnitude sqrt(2)", Point{1, 1}},
+		{"Point with magnitude 5", Point{3, 4}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.p.Magnitude()
+			}
+
+		})
+	}
+}
+
 func TestPointNormalize(t *testing.T) {
 	testCases := []struct {
 		desc string
@@ -223,6 +310,27 @@ func TestPointNormalize(t *testing.T) {
 	}
 }
 
+func BenchmarkPointNormalize(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		p    Point
+	}{
+		{"Point with magnitude 1", Point{1, 0}},
+		{"Point with magnitude 2", Point{2, 0}},
+		{"Point with magnitude sqrt(2)", Point{1, 1}},
+		{"Point with magnitude 5", Point{3, 4}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.p.Normalize()
+			}
+
+		})
+	}
+}
+
 func TestPointDotProduct(t *testing.T) {
 	testCases := []struct {
 		desc string
@@ -248,6 +356,27 @@ func TestPointDotProduct(t *testing.T) {
 			if got := tC.p1.DotProduct(tC.p2); got != tC.out {
 				t.Errorf("DotProduct() = %v, want %v", got, tC.out)
 			}
+		})
+	}
+}
+
+func BenchmarkPointDotProduct(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		p    Point
+		q    Point
+	}{
+		{"Point with magnitude 1", Point{1, 0}, Point{1, 0}},
+		{"Point with magnitude 2", Point{2, 0}, Point{2, 0}},
+		{"Two Points with random numbers", Point{3.4, -2.3}, Point{100.2, 7.6}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.p.Magnitude()
+			}
+
 		})
 	}
 }
@@ -341,6 +470,28 @@ func TestLineSegmentAngle(t *testing.T) {
 	}
 }
 
+func BenchmarkLineSegmentAngle(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		in   LineSegment
+	}{
+		{"positive x-axis", LineSegment{Point{1, 0}, Point{2, 0}}},
+		{"positive y-axis", LineSegment{Point{0, 1}, Point{0, 2}}},
+		{"negative y-axis", LineSegment{Point{-1, 0}, Point{-2, 0}}},
+		{"random point 1", LineSegment{Point{3.4, -2.3}, Point{100.2, 7.6}}},
+		{"random point 2", LineSegment{Point{23.554, 3990.2}, Point{0, 5.45345}}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.in.Angle()
+			}
+
+		})
+	}
+}
+
 func TestLineSegmentRotateAboutOrigin(t *testing.T) {
 	testCases := []struct {
 		desc  string
@@ -382,6 +533,28 @@ func TestLineSegmentRotateAboutOrigin(t *testing.T) {
 	}
 }
 
+func BenchmarkLineSegmentRotateAboutOrigin(b *testing.B) {
+	benchmarks := []struct {
+		desc  string
+		l1    LineSegment
+		angle float64
+	}{
+		{"Rotate x-axis with no angle", LineSegment{Point{1, 0}, Point{2, 0}}, 0},
+		{"Rotate x-axis with 45 deg angle", LineSegment{Point{1, 0}, Point{2, 0}}, math.Pi / 4},
+		{"Rotate y-axis with no angle", LineSegment{Point{0, 1}, Point{0, 2}}, 0},
+		{"Rotate line at 45 deg angle by 90 deg", LineSegment{Point{0, 0}, Point{1, 1}}, math.Pi / 2},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.l1.RotateAboutOrigin(bm.angle)
+			}
+
+		})
+	}
+}
+
 func TestOpenIntervalIsEmpty(t *testing.T) {
 	testCases := []struct {
 		desc string
@@ -414,6 +587,27 @@ func TestOpenIntervalIsEmpty(t *testing.T) {
 			if got := tC.in.IsEmpty(); got != tC.out {
 				t.Errorf("IsEmpty() = %v, want %v", got, tC.out)
 			}
+		})
+	}
+}
+
+func BenchmarkOpenIntervalIsEmpty(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		in   OpenInterval
+	}{
+		{"empty", OpenInterval{math.NaN(), math.NaN()}},
+		{"first NaN", OpenInterval{math.NaN(), 1}},
+		{"second NaN", OpenInterval{1, math.NaN()}},
+		{"both are regular numbers", OpenInterval{1, 2}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.in.IsEmpty()
+			}
+
 		})
 	}
 }
@@ -467,6 +661,30 @@ func TestOpenIntervalIntersection(t *testing.T) {
 			if got := tC.o1.Intersection(tC.o2); !got.Equals(tC.out) {
 				t.Errorf("Intersection() = %v, want %v", got, tC.out)
 			}
+		})
+	}
+}
+
+func BenchmarkOpenIntervalIntersection(b *testing.B) {
+	benchmarks := []struct {
+		desc string
+		o1   OpenInterval
+		o2   OpenInterval
+	}{
+		{"No overlap", OpenInterval{1, 2}, OpenInterval{3, 4}},
+		{"Some overlap", OpenInterval{1, 2}, OpenInterval{1.5, 2.5}},
+		{"Complete overlap", OpenInterval{1, 2}, OpenInterval{1, 2}},
+		{"Single number overlap", OpenInterval{1, 2}, OpenInterval{2, 3}},
+		{"Some more overlap", OpenInterval{-10, -5}, OpenInterval{-7.3, -2}},
+		{"Both NaN", OpenInterval{math.NaN(), math.NaN()}, OpenInterval{math.NaN(), math.NaN()}},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.desc, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				bm.o1.Intersection(bm.o2)
+			}
+
 		})
 	}
 }
@@ -554,175 +772,33 @@ func TestLineSegmentIntersects(t *testing.T) {
 	}
 }
 
-func BenchmarkPointAngle(b *testing.B) {
-	benchmarks := []struct {
+func TestTriangleEquals(t *testing.T) {
+	testCases := []struct {
 		desc string
-		in   Point
+		t1   Triangle
+		t2   Triangle
 	}{
-		{"positive x-axis", Point{1, 0}},
-		{"positive y-axis", Point{0, 1}},
-		{"negative y-axis", Point{-1, 0}},
-		{"random point 1", Point{3.4, -2.3}},
-		{"random point 2", Point{100.2, 7.6}},
+		{
+			desc: "Two equal triangles",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+		},
+		{
+			desc: "They are the same but one is rotated",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{0, 1}, Point{0, 0}, Point{1, 0}},
+		},
+		{
+			desc: "They are the same but one is rotated further",
+			t1:   Triangle{Point{0, 0}, Point{1, 0}, Point{0, 1}},
+			t2:   Triangle{Point{1, 0}, Point{0, 1}, Point{0, 0}},
+		},
 	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.in.Angle()
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			if got := tC.t1.Equals(tC.t2); !got {
+				t.Errorf("Equals() = %v, want %v", got, true)
 			}
-
-		})
-	}
-}
-
-func BenchmarkPointRotate(b *testing.B) {
-	benchmarks := []struct {
-		desc  string
-		in    Point
-		angle float64
-	}{
-		{"Rotate x-axis with no angle", Point{1, 0}, 0},
-		{"Rotate x-axis with 45 deg angle", Point{1, 0}, math.Pi / 4},
-		{"Rotate random point by 90 deg angle", Point{3.4, -2.3}, math.Pi / 2},
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.in.Rotate(bm.angle)
-			}
-
-		})
-	}
-}
-
-func BenchmarkPointXIntercept(b *testing.B) {
-	benchmarks := []struct {
-		desc string
-		p    Point
-		q    Point
-	}{
-		{"Intercept of two vertical lines", Point{1, 0}, Point{1, 1}},
-		{"Intercept of two horizontal lines", Point{0, 1}, Point{1, 1}},
-		{"Intercept of two diagonal lines", Point{1, 1}, Point{3, 3}},
-		{"Intercept of two lines with same slope", Point{1, 1}, Point{2, 2}},
-		{"Intercept of two lines with different slope", Point{1, 1}, Point{2, 3}},
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.p.XIntercept(bm.q)
-			}
-
-		})
-	}
-}
-
-func BenchmarkPointMagnitude(b *testing.B) {
-	benchmarks := []struct {
-		desc string
-		p    Point
-	}{
-		{"Point with magnitude 1", Point{1, 0}},
-		{"Point with magnitude 2", Point{2, 0}},
-		{"Point with magnitude sqrt(2)", Point{1, 1}},
-		{"Point with magnitude 5", Point{3, 4}},
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.p.Magnitude()
-			}
-
-		})
-	}
-}
-
-func BenchmarkPointNormalize(b *testing.B) {
-	benchmarks := []struct {
-		desc string
-		p    Point
-	}{
-		{"Point with magnitude 1", Point{1, 0}},
-		{"Point with magnitude 2", Point{2, 0}},
-		{"Point with magnitude sqrt(2)", Point{1, 1}},
-		{"Point with magnitude 5", Point{3, 4}},
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.p.Normalize()
-			}
-
-		})
-	}
-}
-
-func BenchmarkPointDotProduct(b *testing.B) {
-	benchmarks := []struct {
-		desc string
-		p    Point
-		q    Point
-	}{
-		{"Point with magnitude 1", Point{1, 0}, Point{1, 0}},
-		{"Point with magnitude 2", Point{2, 0}, Point{2, 0}},
-		{"Two Points with random numbers", Point{3.4, -2.3}, Point{100.2, 7.6}},
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.p.Magnitude()
-			}
-
-		})
-	}
-}
-
-func BenchmarkLineSegmentAngle(b *testing.B) {
-	benchmarks := []struct {
-		desc string
-		in   LineSegment
-	}{
-		{"positive x-axis", LineSegment{Point{1, 0}, Point{2, 0}}},
-		{"positive y-axis", LineSegment{Point{0, 1}, Point{0, 2}}},
-		{"negative y-axis", LineSegment{Point{-1, 0}, Point{-2, 0}}},
-		{"random point 1", LineSegment{Point{3.4, -2.3}, Point{100.2, 7.6}}},
-		{"random point 2", LineSegment{Point{23.554, 3990.2}, Point{0, 5.45345}}},
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.in.Angle()
-			}
-
-		})
-	}
-}
-
-func BenchmarkLineSegmentRotateAboutOrigin(b *testing.B) {
-	benchmarks := []struct {
-		desc  string
-		l1    LineSegment
-		angle float64
-	}{
-		{"Rotate x-axis with no angle", LineSegment{Point{1, 0}, Point{2, 0}}, 0},
-		{"Rotate x-axis with 45 deg angle", LineSegment{Point{1, 0}, Point{2, 0}}, math.Pi / 4},
-		{"Rotate y-axis with no angle", LineSegment{Point{0, 1}, Point{0, 2}}, 0},
-		{"Rotate line at 45 deg angle by 90 deg", LineSegment{Point{0, 0}, Point{1, 1}}, math.Pi / 2},
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.l1.RotateAboutOrigin(bm.angle)
-			}
-
 		})
 	}
 }
@@ -759,51 +835,6 @@ func BenchmarkLineSegmentsIntersects(b *testing.B) {
 		b.Run(bm.desc, func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				bm.l1.Intersects(bm.l2)
-			}
-
-		})
-	}
-}
-
-func BenchmarkOpenIntervalIntersection(b *testing.B) {
-	benchmarks := []struct {
-		desc string
-		o1   OpenInterval
-		o2   OpenInterval
-	}{
-		{"No overlap", OpenInterval{1, 2}, OpenInterval{3, 4}},
-		{"Some overlap", OpenInterval{1, 2}, OpenInterval{1.5, 2.5}},
-		{"Complete overlap", OpenInterval{1, 2}, OpenInterval{1, 2}},
-		{"Single number overlap", OpenInterval{1, 2}, OpenInterval{2, 3}},
-		{"Some more overlap", OpenInterval{-10, -5}, OpenInterval{-7.3, -2}},
-		{"Both NaN", OpenInterval{math.NaN(), math.NaN()}, OpenInterval{math.NaN(), math.NaN()}},
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.o1.Intersection(bm.o2)
-			}
-
-		})
-	}
-}
-
-func BenchmarkOpenIntervalIsEmpty(b *testing.B) {
-	benchmarks := []struct {
-		desc string
-		in   OpenInterval
-	}{
-		{"empty", OpenInterval{math.NaN(), math.NaN()}},
-		{"first NaN", OpenInterval{math.NaN(), 1}},
-		{"second NaN", OpenInterval{1, math.NaN()}},
-		{"both are regular numbers", OpenInterval{1, 2}},
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.desc, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				bm.in.IsEmpty()
 			}
 
 		})
